@@ -10,17 +10,16 @@ public class Ball : MonoBehaviour
     [SerializeField]
     float defaultSpeed = 1.2F;
 
-    [SerializeField]
-    bool horizontal = false;
-
     // in respect to (angle, z)
     Vector2 velocity = new Vector2(0F, 0F);
 
+    Vector3 startPosition;
+    public float StartZ => startPosition.z;
 
     private void Start()
     {
-        if (!horizontal) SetVelocity(0, 1);
-        else SetVelocity(1, 0);
+        startPosition = transform.position;
+        GameManager.OnReset += OnReset;
     }
 
     private void FixedUpdate()
@@ -35,16 +34,26 @@ public class Ball : MonoBehaviour
         transform.position = new Vector3(velocity.x == 0 ? lastPos.x : Track.TrackSize/2F * Mathf.Cos(futureAngle),
             velocity.x == 0 ? lastPos.y : Track.TrackSize/2F * Mathf.Sin(futureAngle),
             lastPos.z + velocity.y);
+
+        if (transform.position.z < -5F)
+            GameManager.OnBallLost?.Invoke();
     }
 
     private void OnCollisionEnter(Collision collision)
     {
+        if (!GameManager.AllowInput) return;
+
         var contact = collision.GetContact(0).point;
         if (collision.gameObject.CompareTag("Paddle"))
         {
             var newVel = collision.gameObject.GetComponent<Paddle>()?.GenerateBallVelocity(contact) ?? Vector2.zero;
             if (newVel == Vector2.zero) Debug.LogError("Error finding Paddle script!");
-            SetVelocity(newVel);
+            else if (newVel == Vector2.one)
+            {
+                // keyword to just flip y (z) - or we will just ensure y (z) is positive here:
+                velocity = new Vector2(velocity.x, Mathf.Abs(velocity.y));
+            }
+            else SetVelocity(newVel);
         }
         else
         {
@@ -78,5 +87,10 @@ public class Ball : MonoBehaviour
     public void SetVelocity(Vector2 coord)
     {
         SetVelocity(coord.x, coord.y);
+    }
+
+    void OnReset()
+    {
+        SetVelocity(Vector2.zero);
     }
 }
