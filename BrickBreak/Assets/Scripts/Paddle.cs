@@ -29,6 +29,7 @@ public class Paddle : MonoBehaviour
     float currentAngleVelocity = 0F;
 
     Routine movement;
+    Routine mouseMovement;
 
     private void Start()
     {
@@ -39,14 +40,27 @@ public class Paddle : MonoBehaviour
 
     private void Update()
     {
-        if (isReady)
+        if (GameManager.AllowInput)
         {
-            if (Input.GetButtonDown("Fire"))
+            if (isReady)
             {
-                isReady = false;
-                ball.transform.SetParent(transform.parent);
-                var ballVel = GenerateBallVelocity(paddle.transform.position);
-                ball.SetVelocity(ballVel == Vector2.one ? Vector2.up : ballVel);
+                if (Input.GetButtonDown("Fire"))
+                {
+                    isReady = false;
+                    ball.transform.SetParent(transform.parent);
+                    var ballVel = GenerateBallVelocity(paddle.transform.position);
+                    ball.SetVelocity(ballVel == Vector2.one ? Vector2.up : ballVel);
+                }
+            }
+
+            // mouse movement:
+            if (Input.GetMouseButtonDown(0))
+            {
+                var norm = (new Vector2(Input.mousePosition.x - (Screen.width / 2F), Input.mousePosition.y - (Screen.height / 2F))).normalized;
+                var angle = Mathf.Atan2(norm.y, norm.x);
+
+                if (movement.Exists()) movement.Stop(); 
+                mouseMovement.Replace(MovePaddleMouse(angle));
             }
         }
     }
@@ -58,14 +72,15 @@ public class Paddle : MonoBehaviour
             float direction = Input.GetAxisRaw("Horizontal");
             if (currentDirection != direction)
             {
-                if (direction == 0F)
+                if (direction == 0F && !mouseMovement.Exists())
                 {
                     // decelerate
                     movement.Replace(DeceleratePaddle(currentDirection > 0F));
                 }
-                else
+                else if (direction != 0F)
                 {
                     // accelerate
+                    if (mouseMovement.Exists()) mouseMovement.Stop();
                     movement.Replace(AcceleratePaddle(direction > 0F));
                 }
 
@@ -74,7 +89,6 @@ public class Paddle : MonoBehaviour
         }
     }
 
-    // todo: for click movement - debug angle before and after while loop generated from \/
     IEnumerator AcceleratePaddle(bool forward)
     {
         float time = 0F;
@@ -117,7 +131,119 @@ public class Paddle : MonoBehaviour
             yield return new WaitForFixedUpdate();
             time += Time.deltaTime;
         }
-        currentAngleVelocity = 0F;
+        currentAngleVelocity = currentDirection = 0F;
+    }
+
+    IEnumerator MovePaddleMouse(float endAngle)
+    {
+        float distance = Mathf.DeltaAngle(currentAngle * Mathf.Rad2Deg, endAngle * Mathf.Rad2Deg) * Mathf.Deg2Rad;
+        if (Mathf.Abs(distance) <= 0.001F)
+        {
+            // don't move
+            currentDirection = 0F;
+            yield break;
+        }
+        else if (distance > 0F)
+            currentDirection = 1F;
+        else 
+            currentDirection = -1F;
+
+        //endAngle = currentAngle + distance;
+        var direction = currentDirection > 0F;
+        var accelThreshold = (accelTime * 2.4F);
+
+        // if disposition is less than accel + decel, just move the whole way slow: (with a small buffer in there
+        if (Mathf.Abs(distance) <= accelThreshold)
+        {
+            var diff = defaultSpeed / 2F;
+            if (direction)
+            {
+                while (distance > 0F)
+                {
+                    if (distance < diff) 
+                        diff = distance;
+                    distance -= diff;
+                    SetPaddleFromAngle(currentAngle + diff);
+                    yield return new WaitForFixedUpdate();
+                }
+            }
+            else
+            {
+                while (distance < 0F)
+                {
+                    if (Mathf.Abs(distance) < diff) 
+                        diff = Mathf.Abs(distance);
+                    distance += diff;
+                    SetPaddleFromAngle(currentAngle - diff);
+                    yield return new WaitForFixedUpdate();
+                }
+            }
+        }
+        // else do the whole thing:
+        else
+        {
+            float time = 0F;
+
+            // accel (if we are already going this speed then skip):
+            if (currentAngleVelocity == 0F || (currentAngleVelocity != 0 && Mathf.Sign(currentAngleVelocity) != Mathf.Sign(distance)))
+            {
+                while (time < accelTime)
+                {
+                    float curveTime = accelCurve.Evaluate(time / accelTime) * defaultSpeed;
+
+                    if (direction)
+                    {
+                        distance -= curveTime;
+                        SetPaddleFromAngle(currentAngle + curveTime);
+                    }
+                    else
+                    {
+                        distance += curveTime;
+                        SetPaddleFromAngle(currentAngle - curveTime);
+                    }
+
+                    yield return new WaitForFixedUpdate();
+                    time += Time.deltaTime;
+                }
+            }
+
+            // constant:
+            var diff = defaultSpeed;
+            if (direction)
+            {
+                while (distance > accelThreshold)
+                {
+                    distance -= diff;
+                    SetPaddleFromAngle(currentAngle + diff);
+                    yield return new WaitForFixedUpdate();
+                }
+            }
+            else
+            {
+                while (distance < -accelThreshold)
+                {
+                    distance += diff;
+                    SetPaddleFromAngle(currentAngle - diff);
+                    yield return new WaitForFixedUpdate();
+                }
+            }
+
+            // decel:
+            time = 0F;
+            while (time < accelTime)
+            {
+                float curveTime = decelCurve.Evaluate(time / accelTime) * defaultSpeed;
+
+                if (direction) SetPaddleFromAngle(currentAngle + curveTime);
+                else SetPaddleFromAngle(currentAngle - curveTime);
+
+
+                yield return new WaitForFixedUpdate();
+                time += Time.deltaTime;
+            }
+        }
+
+        currentAngleVelocity = currentDirection = 0F;
     }
 
     void SetPaddleFromAngle(float angle)
@@ -166,6 +292,7 @@ public class Paddle : MonoBehaviour
     void OnReset()
     {
         if (movement.Exists()) movement.Stop();
+        if (mouseMovement.Exists()) mouseMovement.Stop();
         currentDirection = 0F;
     }
 

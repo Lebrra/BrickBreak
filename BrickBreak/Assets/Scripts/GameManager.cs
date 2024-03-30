@@ -9,6 +9,7 @@ public class GameManager : MonoBehaviour
     // 'bigger' actions:
     public static Action OnGameStart;
     public static Action OnGameReset;
+    public static Action OnGameWin;
     public static Action OnGameOver;
 
     // OnBallLost: reset actions, ready actions, allow player input
