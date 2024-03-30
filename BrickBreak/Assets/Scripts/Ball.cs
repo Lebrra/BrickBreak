@@ -40,20 +40,29 @@ public class Ball : MonoBehaviour
     private void OnCollisionEnter(Collision collision)
     {
         var contact = collision.GetContact(0).point;
-        var normalAbs = (contact - transform.position).normalized;
-        normalAbs = new Vector3(Mathf.Abs(normalAbs.x), Mathf.Abs(normalAbs.y), Mathf.Abs(normalAbs.z));
-
-        // todo: possibly add threshold
-        if (normalAbs.z >= (normalAbs.x + normalAbs.y))
+        if (collision.gameObject.CompareTag("Paddle"))
         {
-            // flip 'y' => z 
-            velocity = new Vector2(velocity.x, -velocity.y);
-
+            var newVel = collision.gameObject.GetComponent<Paddle>()?.GenerateBallVelocity(contact) ?? Vector2.zero;
+            if (newVel == Vector2.zero) Debug.LogError("Error finding Paddle script!");
+            SetVelocity(newVel);
         }
-        if (normalAbs.z <= (normalAbs.x + normalAbs.y))
+        else
         {
-            // flip 'x' => angle => unit values of x/y
-            velocity = new Vector2(-velocity.x, velocity.y);
+            var normalAbs = (contact - transform.position).normalized;
+            normalAbs = new Vector3(Mathf.Abs(normalAbs.x), Mathf.Abs(normalAbs.y), Mathf.Abs(normalAbs.z));
+
+            // todo: possibly add threshold
+            if (normalAbs.z >= (normalAbs.x + normalAbs.y))
+            {
+                // flip 'y' => z 
+                velocity = new Vector2(velocity.x, -velocity.y);
+
+            }
+            if (normalAbs.z <= (normalAbs.x + normalAbs.y))
+            {
+                // flip 'x' => angle => unit values of x/y
+                velocity = new Vector2(-velocity.x, velocity.y);
+            }
         }
     }
 
@@ -64,5 +73,10 @@ public class Ball : MonoBehaviour
     {
         var multiplier = (Track.TrackSize * 2F) / (Mathf.PI * 2F);
         velocity = new Vector2(x, y * multiplier) * defaultSpeed;
+    }
+
+    public void SetVelocity(Vector2 coord)
+    {
+        SetVelocity(coord.x, coord.y);
     }
 }

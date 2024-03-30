@@ -16,10 +16,13 @@ public class Paddle : MonoBehaviour
 
     [SerializeField]
     float defaultSpeed = 0.02F;
+    [SerializeField]
+    float edgeAngle = 0.2F;
 
 
     float currentAngle = Mathf.PI * 3F / 2F;
     float currentDirection = 0F;
+    float currentAngleVelocity = 0F;
 
     Routine movement;
 
@@ -50,9 +53,8 @@ public class Paddle : MonoBehaviour
         {
             float curveTime = accelCurve.Evaluate(time / accelTime) * defaultSpeed;
 
-            if (forward) currentAngle += curveTime;
-            else currentAngle -= curveTime;
-            SetPaddleFromAngle(currentAngle);
+            if (forward) SetPaddleFromAngle(currentAngle + curveTime);
+            else SetPaddleFromAngle(currentAngle - curveTime);
 
             yield return new WaitForFixedUpdate();
             time += Time.deltaTime;
@@ -65,9 +67,8 @@ public class Paddle : MonoBehaviour
     {
         while (true)
         {
-            if (forward) currentAngle += defaultSpeed;
-            else currentAngle -= defaultSpeed;
-            SetPaddleFromAngle(currentAngle);
+            if (forward) SetPaddleFromAngle(currentAngle + defaultSpeed);
+            else SetPaddleFromAngle(currentAngle - defaultSpeed);
 
             yield return new WaitForFixedUpdate();
         }
@@ -80,13 +81,14 @@ public class Paddle : MonoBehaviour
         {
             float curveTime = decelCurve.Evaluate(time / accelTime) * defaultSpeed;
 
-            if (forward) currentAngle += curveTime;
-            else currentAngle -= curveTime;
-            SetPaddleFromAngle(currentAngle);
+            if (forward) SetPaddleFromAngle(currentAngle + curveTime);
+            else SetPaddleFromAngle(currentAngle - curveTime);
+
 
             yield return new WaitForFixedUpdate();
             time += Time.deltaTime;
         }
+        currentAngleVelocity = 0F;
     }
 
     void SetPaddleFromAngle(float angle)
@@ -94,5 +96,27 @@ public class Paddle : MonoBehaviour
         float multiplier = Track.TrackSize / 2F;
         paddle.localPosition = multiplier * new Vector3(Mathf.Cos(angle), Mathf.Sin(angle), 0F);
         paddle.localEulerAngles = Vector3.forward * Mathf.Rad2Deg * (angle - Mathf.PI / 2F);
+        currentAngleVelocity = angle - currentAngle;
+        currentAngle = angle;
+    }
+
+    /// <summary>
+    /// Using the current speed of the paddle & the point of contact, generate a new normalized velocity for the ball
+    /// </summary>
+    public Vector2 GenerateBallVelocity(Vector2 contact)
+    {
+        // 50% will be impacted by the speed of the paddle:
+        var horizontalImact = (currentAngleVelocity / defaultSpeed) * 0.5F;
+
+        // 50% will be impacted by the position hit on the paddle: (converted to angles because math)
+        var contactAngle = Mathf.Atan2(contact.normalized.y, contact.normalized.x);
+        var paddleAngle = Mathf.Atan2(paddle.position.normalized.y, paddle.position.normalized.x);
+        float difference = contactAngle - paddleAngle;
+        // [-0.2, 0.2] == [left edge, right edge]
+
+        horizontalImact += ((difference / edgeAngle) * 0.5F);
+
+        // note: y (z) will always be positive => y = 1 - Mathf.Abs(x)
+        return new Vector2(horizontalImact, 1F - Mathf.Abs(horizontalImact));
     }
 }
