@@ -248,16 +248,15 @@ public class Paddle : MonoBehaviour
 
     void SetPaddleFromAngle(float angle)
     {
-        float multiplier = Track.TrackSize / 2F;
-        paddle.localPosition = multiplier * new Vector3(Mathf.Cos(angle), Mathf.Sin(angle), 0F);
-        paddle.localEulerAngles = Vector3.forward * Mathf.Rad2Deg * (angle - Mathf.PI / 2F);
+        paddle.localPosition = Utility.GetWorldPosition(new Vector2(angle, 0F));
+        paddle.localEulerAngles = Utility.GetWorldRotation(angle);
         currentAngleVelocity = angle - currentAngle;
         currentAngle = angle;
 
         if (isReady)
         {
             // move ball too:
-            ball.transform.position = new Vector3(multiplier * Mathf.Cos(angle), multiplier * Mathf.Sin(angle), ball.transform.position.z);
+            ball.transform.position = Utility.GetWorldPosition(new Vector2(angle, ball.transform.position.z));
         }
     }
 

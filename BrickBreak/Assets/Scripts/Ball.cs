@@ -30,8 +30,8 @@ public class Ball : MonoBehaviour
         var currentAngle = Mathf.Atan2(normal.y, normal.x);
         var futureAngle = currentAngle + velocity.x;
 
-        transform.position = new Vector3(velocity.x == 0 ? lastPos.x : Track.TrackSize/2F * Mathf.Cos(futureAngle),
-            velocity.x == 0 ? lastPos.y : Track.TrackSize/2F * Mathf.Sin(futureAngle),
+        transform.position = new Vector3(velocity.x == 0 ? lastPos.x : GameProperties.TrackSize/2F * Mathf.Cos(futureAngle),
+            velocity.x == 0 ? lastPos.y : GameProperties.TrackSize/2F * Mathf.Sin(futureAngle),
             lastPos.z + velocity.y);
 
         if (transform.position.z < -5F)
@@ -71,6 +71,12 @@ public class Ball : MonoBehaviour
                 // flip 'x' => angle => unit values of x/y
                 velocity = new Vector2(-velocity.x, velocity.y);
             }
+
+            if (collision.gameObject.CompareTag("Brick"))
+            {
+                var brick = collision.gameObject.GetComponentsInParent<Brick>()[0] ?? null;
+                if (brick) brick.HitBrick();
+            }
         }
     }
 
@@ -79,7 +85,7 @@ public class Ball : MonoBehaviour
     // (1, 0) == straight 'horizontally' (hopefully never)
     public void SetVelocity(float x, float y)
     {
-        var multiplier = (Track.TrackSize * 2F) / (Mathf.PI * 2F);
+        var multiplier = (GameProperties.TrackSize * 2F) / (Mathf.PI * 2F);
         velocity = new Vector2(x, y * multiplier) * defaultSpeed;
     }
 

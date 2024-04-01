@@ -30,6 +30,7 @@ public class GameManager : MonoBehaviour
     {
         yield return new WaitForEndOfFrame();
 
+        OnGameStart?.Invoke();
         SetGameplayLoop();
     }
 

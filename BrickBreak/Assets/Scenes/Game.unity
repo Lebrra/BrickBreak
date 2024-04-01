@@ -398,7 +398,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 8036b5c63038e7443a5c1d450fcdcf42, type: 2}
+  - {fileID: 2100000, guid: 254702f7bf30a624fab3bdb44d50ddd5, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -657,6 +657,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   backWall: {fileID: 2126553728}
+  brickProps: {fileID: 11400000, guid: f84527c246608ef4e841f568aad453c8, type: 2}
 --- !u!4 &1092202403
 Transform:
   m_ObjectHideFlags: 0
@@ -773,7 +774,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 254702f7bf30a624fab3bdb44d50ddd5, type: 2}
+  - {fileID: 2100000, guid: 7a88309e9e4da5248b3cac77cc3add45, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
