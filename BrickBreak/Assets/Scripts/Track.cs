@@ -1,3 +1,4 @@
+using BeauRoutine;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -35,35 +36,47 @@ public class Track : MonoBehaviour
 
     void GenerateMap()
     {
-        if (activeBricks.Count > 0)
+        Routine.Start(GenerateBricks());
+    }
+
+    IEnumerator GenerateBricks()
+    {
+        var brickCount = 0;
+        var brickDistributions = new List<int>();
+        brickDistributions.Add(GameProperties.GetBrickDistribution);
+        int disk = 0;
+        float point = 0F;
+
+        while (brickCount < GameProperties.StartingBricksAmount && disk < 8)
         {
-            Debug.LogError("Bricks found in active bricks! Removing...");
-            foreach (var brick in activeBricks)
+            if (UnityEngine.Random.Range(0, 10) > 2)
             {
-                if (!disabledBricks.Contains(brick))
-                    disabledBricks.Add(brick);
+                var depth = GameProperties.TrackSize * 2F - 2F * (disk + 1);
+
+                var brick = GetBrick();
+                var health = Mathf.Clamp(UnityEngine.Random.Range(1, 10), 1, GameProperties.MaxBrickHealth);
+                activeBricks.Add(brick);
+                brick.InitializeBrick(GetBrickProp.Invoke(health), health, new Vector2(point, depth));
+                brick.gameObject.SetActive(true);
+                brickCount++;
+
+                yield return 0.01F;
             }
-            activeBricks = new List<Brick>();
+
+            // update values:
+            point += (Mathf.PI / brickDistributions[disk]);
+            if (point > (Mathf.PI * 1.99F))
+            {
+                point = 0F;
+                disk = (disk + 1);
+                brickDistributions.Add(GameProperties.GetBrickDistribution);
+            }
         }
 
-        for (int i = 0; i < 5; i++)
-        {
-            var depth = GameProperties.TrackSize * 2F - 2F * (i + 1);
-            var distribution = GameProperties.GetBrickDistribution;
+        if (brickCount < GameProperties.StartingBricksAmount)
+            Debug.LogWarning("Invalid brick count!");
 
-            for (float j = 0; j < Math.PI * 2F; j += (MathF.PI / distribution))
-            {
-                if (UnityEngine.Random.Range(0, 10) > 3)
-                {
-                    var brick = GetBrick();
-                    var health = Mathf.Clamp(UnityEngine.Random.Range(1, 10), 1, GameProperties.MaxBrickHealth);
-                    activeBricks.Add(brick);
-                    brick.InitializeBrick(GetBrickProp.Invoke(health), health, new Vector2(j, depth));
-                    brick.gameObject.SetActive(true);
-                }
-                // else no brick here
-            }
-        }
+        GameManager.ReadyGameplayLoop?.Invoke();
     }
 
     Brick GetBrick()

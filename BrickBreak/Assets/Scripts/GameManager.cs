@@ -9,6 +9,7 @@ public class GameManager : MonoBehaviour
     // 'bigger' actions:
     public static Action OnGameStart;
     public static Action OnGameReset;
+    public static Action ReadyGameplayLoop;
     public static Action OnGameWin;
     public static Action OnGameOver;
 
@@ -18,10 +19,14 @@ public class GameManager : MonoBehaviour
     public static Action OnReset;
     public static Action OnReady;
 
+    int lives = 0;
+
     private void Start()
     {
         AllowInput = false;
-        OnBallLost += SetGameplayLoop;
+        OnGameStart += SetLives;
+        ReadyGameplayLoop += SetGameplayLoop;
+        OnBallLost += LifeLost;
 
         Routine.Start(LateStart());
     }
@@ -31,7 +36,11 @@ public class GameManager : MonoBehaviour
         yield return new WaitForEndOfFrame();
 
         OnGameStart?.Invoke();
-        SetGameplayLoop();
+    }
+
+    void SetLives()
+    {
+        lives = GameProperties.StartingHealthAmount;
     }
 
     void SetGameplayLoop()
@@ -40,5 +49,17 @@ public class GameManager : MonoBehaviour
         OnReset?.Invoke();
         OnReady?.Invoke();
         AllowInput = true;
+    }
+
+    void LifeLost()
+    {
+        lives--;
+        if (lives <= 0)
+        {
+            // DEAD
+            AllowInput = false;
+            OnGameOver?.Invoke();
+        }
+        else SetGameplayLoop();
     }
 }

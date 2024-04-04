@@ -34,7 +34,7 @@ public class Ball : MonoBehaviour
             velocity.x == 0 ? lastPos.y : GameProperties.TrackSize/2F * Mathf.Sin(futureAngle),
             lastPos.z + velocity.y);
 
-        if (transform.position.z < -5F)
+        if (transform.position.z < -5F && GameManager.AllowInput)
             GameManager.OnBallLost?.Invoke();
     }
 
@@ -50,23 +50,29 @@ public class Ball : MonoBehaviour
             else if (newVel == Vector2.one)
             {
                 // keyword to just flip y (z) - or we will just ensure y (z) is positive here:
-                velocity = new Vector2(velocity.x, Mathf.Abs(velocity.y));
+                // (also see if x needs flipping)
+                var normalAbs = (contact - transform.position).normalized;
+                Debug.DrawRay(contact, normalAbs, Color.red, 10F);
+                normalAbs = new Vector3(Mathf.Abs(normalAbs.x), Mathf.Abs(normalAbs.y), Mathf.Abs(normalAbs.z));
+
+                velocity = new Vector2(normalAbs.z < 0.3F ? -velocity.x : velocity.x, Mathf.Abs(velocity.y));
             }
             else SetVelocity(newVel);
         }
         else
         {
             var normalAbs = (contact - transform.position).normalized;
+            Debug.DrawRay(contact, normalAbs, Color.red, 10F);
             normalAbs = new Vector3(Mathf.Abs(normalAbs.x), Mathf.Abs(normalAbs.y), Mathf.Abs(normalAbs.z));
 
             // todo: possibly add threshold
-            if (normalAbs.z >= (normalAbs.x + normalAbs.y))
+            if (normalAbs.z >= 0.3F)
             {
                 // flip 'y' => z 
                 velocity = new Vector2(velocity.x, -velocity.y);
 
             }
-            if (normalAbs.z <= (normalAbs.x + normalAbs.y))
+            if ((normalAbs.x + normalAbs.y) >= 0.6F)
             {
                 // flip 'x' => angle => unit values of x/y
                 velocity = new Vector2(-velocity.x, velocity.y);

@@ -9,4 +9,7 @@ public static class GameProperties
 
     static int[] BrickDistributions => new int[3] { 6, 7, 8 };
     public static int GetBrickDistribution => BrickDistributions[Random.Range(0, BrickDistributions.Length)];
+
+    public static int StartingBricksAmount = 50;
+    public static int StartingHealthAmount = 3;
 }
