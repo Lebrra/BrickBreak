@@ -23,6 +23,9 @@ public class Brick : MonoBehaviour
 
     public void HitBrick()
     {
+        // don't do anything if the game ended
+        if (!GameManager.InGame) return;
+
         health--;
 
         if (health <= 0)

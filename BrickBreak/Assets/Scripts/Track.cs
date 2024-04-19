@@ -97,7 +97,14 @@ public class Track : MonoBehaviour
 
     void ResetMap()
     {
-        // todo: get rid of all active bricks
+        while (activeBricks.Count > 0)
+        {
+            var brick = activeBricks[0];
+            brick.gameObject.SetActive(false);
+
+            activeBricks.Remove(brick);
+            disabledBricks.Add(brick);
+        }
     }
 
     void RemoveBrick(Brick brick)
@@ -111,6 +118,8 @@ public class Track : MonoBehaviour
         if (activeBricks.Count == 0)
         {
             Debug.LogWarning("YOU WIN WOAH");
+            GameManager.AllowInput = false;
+            GameManager.OnGameWin?.Invoke();
         }
     }
 }

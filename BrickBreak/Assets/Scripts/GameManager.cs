@@ -15,15 +15,19 @@ public class GameManager : MonoBehaviour
 
     // OnBallLost: reset actions, ready actions, allow player input
     public static bool AllowInput;
+    public static bool InGame;
+
     public static Action OnBallLost;
     public static Action OnReset;
     public static Action OnReady;
 
     int lives = 0;
+    bool requiresRestart = false;
+    Routine startingGame;
 
     private void Start()
     {
-        AllowInput = false;
+        InGame = AllowInput = false;
         OnGameStart += SetLives;
         ReadyGameplayLoop += SetGameplayLoop;
         OnBallLost += LifeLost;
@@ -34,8 +38,7 @@ public class GameManager : MonoBehaviour
     IEnumerator LateStart()
     {
         yield return new WaitForEndOfFrame();
-
-        OnGameStart?.Invoke();
+        // do we need this?
     }
 
     void SetLives()
@@ -53,6 +56,9 @@ public class GameManager : MonoBehaviour
 
     void LifeLost()
     {
+        // don't lose if we won
+        if (!InGame) return;
+
         lives--;
         if (lives <= 0)
         {
@@ -61,5 +67,31 @@ public class GameManager : MonoBehaviour
             OnGameOver?.Invoke();
         }
         else SetGameplayLoop();
+    }
+
+    // button actions:
+    public void PlayGameButton()
+    {
+        if (!startingGame.Exists()) 
+            startingGame.Replace(DelayGameStart());
+    }
+
+    IEnumerator DelayGameStart()
+    {
+        ScreenManager.SetScreen?.Invoke("main", false);
+
+        if (requiresRestart) OnGameReset?.Invoke();
+        else requiresRestart = true;
+
+        yield return 0.3F;        
+
+        OnGameStart?.Invoke();
+        InGame = true;
+    }
+
+    public void ToMenuButton()
+    {
+        InGame = AllowInput = false;
+        ScreenManager.SetScreen?.Invoke("main", true);
     }
 }

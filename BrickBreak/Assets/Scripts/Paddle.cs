@@ -252,6 +252,7 @@ public class Paddle : MonoBehaviour
         paddle.localEulerAngles = Utility.GetWorldRotation(angle);
         currentAngleVelocity = angle - currentAngle;
         currentAngle = angle;
+        LightRotator.SetLightRotation?.Invoke(angle - (Mathf.PI / 2F));
 
         if (isReady)
         {

@@ -28,6 +28,9 @@ public class HealthUI : MonoBehaviour
 
     void DecrementHealth()
     {
+        // don't lose if we won
+        if (!GameManager.InGame) return;
+
         if (currentHealth > 0)
             RemoveHealth();
         else Debug.LogWarning("Cannot update UI - health is 0!");

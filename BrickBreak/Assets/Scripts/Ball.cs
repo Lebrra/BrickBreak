@@ -19,6 +19,7 @@ public class Ball : MonoBehaviour
     {
         startPosition = transform.position;
         GameManager.OnReset += OnReset;
+        GameManager.OnGameOver += OnLose;
     }
 
     private void FixedUpdate()
@@ -102,6 +103,16 @@ public class Ball : MonoBehaviour
 
     void OnReset()
     {
-        SetVelocity(Vector2.zero);
+        if (GameManager.InGame)
+        {
+            SetVelocity(Vector2.zero);
+            if (!gameObject.activeInHierarchy) gameObject.SetActive(true);
+        }
+        else gameObject.SetActive(false);
+    }
+
+    void OnLose()
+    {
+        gameObject.SetActive(false);
     }
 }
