@@ -100,6 +100,7 @@ public class Track : MonoBehaviour
         while (activeBricks.Count > 0)
         {
             var brick = activeBricks[0];
+            brick.DisableAllParticles();
             brick.gameObject.SetActive(false);
 
             activeBricks.Remove(brick);
