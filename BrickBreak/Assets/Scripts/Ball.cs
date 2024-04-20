@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -6,8 +7,9 @@ public class Ball : MonoBehaviour
 {
     // the standard (x, y) movement here is mapped to (angle, z) where angle will be transformed to (x,y) based on unit circle * Track.TrackSize/2
 
-    [SerializeField]
-    float defaultSpeed = 1.2F;
+    public static Action RecalculateBallVelocity;
+
+    float defaultSpeed => GameProperties.BallSpeed;
 
     // in respect to (angle, z)
     Vector2 velocity = new Vector2(0F, 0F);
@@ -20,6 +22,7 @@ public class Ball : MonoBehaviour
         startPosition = transform.position;
         GameManager.OnReset += OnReset;
         GameManager.OnGameOver += OnLose;
+        RecalculateBallVelocity += RecalculateVelocity;
     }
 
     private void FixedUpdate()
@@ -99,6 +102,12 @@ public class Ball : MonoBehaviour
     public void SetVelocity(Vector2 coord)
     {
         SetVelocity(coord.x, coord.y);
+    }
+
+    // ball speed was updated - recalculate
+    public void RecalculateVelocity()
+    {
+        SetVelocity(velocity.normalized);
     }
 
     void OnReset()

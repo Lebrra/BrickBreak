@@ -12,4 +12,7 @@ public static class GameProperties
 
     public static int StartingBricksAmount = 50;
     public static int StartingHealthAmount = 3;
+
+    // I'll allow 0.01-0.07
+    public static float BallSpeed = 0.04F;
 }
