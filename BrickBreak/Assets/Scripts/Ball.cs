@@ -49,6 +49,7 @@ public class Ball : MonoBehaviour
         var contact = collision.GetContact(0).point;
         if (collision.gameObject.CompareTag("Paddle"))
         {
+            AudioManager.PlayClip?.Invoke("paddleBonk");
             var newVel = collision.gameObject.GetComponent<Paddle>()?.GenerateBallVelocity(contact) ?? Vector2.zero;
             if (newVel == Vector2.zero) Debug.LogError("Error finding Paddle script!");
             else if (newVel == Vector2.one)
@@ -87,6 +88,7 @@ public class Ball : MonoBehaviour
                 var brick = collision.gameObject.GetComponentsInParent<Brick>()[0] ?? null;
                 if (brick) brick.HitBrick();
             }
+            else AudioManager.PlayClip?.Invoke("backBonk");
         }
     }
 

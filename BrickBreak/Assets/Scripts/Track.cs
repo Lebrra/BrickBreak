@@ -110,7 +110,6 @@ public class Track : MonoBehaviour
 
     void RemoveBrick(Brick brick)
     {
-        // todo: make this look cooler
         brick.gameObject.SetActive(false);
 
         activeBricks.Remove(brick);

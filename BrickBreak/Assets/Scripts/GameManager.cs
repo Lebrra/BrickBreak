@@ -66,12 +66,17 @@ public class GameManager : MonoBehaviour
             AllowInput = false;
             OnGameOver?.Invoke();
         }
-        else SetGameplayLoop();
+        else
+        {
+            AudioManager.PlayClip?.Invoke("ballMiss");
+            SetGameplayLoop();
+        }
     }
 
     // button actions:
     public void PlayGameButton()
     {
+        AudioManager.PlayClip?.Invoke("button");
         if (!startingGame.Exists()) 
             startingGame.Replace(DelayGameStart());
     }
@@ -91,6 +96,7 @@ public class GameManager : MonoBehaviour
 
     public void ToMenuButton()
     {
+        AudioManager.PlayClip?.Invoke("button");
         InGame = AllowInput = false;
         ScreenManager.SetScreen?.Invoke("main", true);
     }

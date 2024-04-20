@@ -41,6 +41,7 @@ public class Brick : MonoBehaviour
         }
         else
         {
+            AudioManager.PlayClip?.Invoke("brickBonk");
             particles[health].gameObject.SetActive(true);
             var newProps = Track.GetBrickProp(health);
             transform.localScale = new Vector3(newProps.scale, newProps.scale, 1F);
@@ -50,6 +51,7 @@ public class Brick : MonoBehaviour
 
     IEnumerator DelayDestroyBrick()
     {
+        AudioManager.PlayClip?.Invoke("brickBreak");
         if (brickCollider) brickCollider.enabled = false;
 
         particles[0].gameObject.SetActive(true);

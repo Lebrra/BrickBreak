@@ -71,6 +71,7 @@ public class ScreenManager : MonoBehaviour
                 if (enabled)
                 {
                     loseScreenAnim.SetTrigger("on");
+                    AudioManager.PlayClip?.Invoke("lose");
                     activeScreen = key;
                 }
                 else
@@ -83,6 +84,7 @@ public class ScreenManager : MonoBehaviour
                 if (enabled)
                 {
                     winScreenAnim.SetTrigger("on");
+                    AudioManager.PlayClip?.Invoke("win");
                     activeScreen = key;
                 }
                 else
