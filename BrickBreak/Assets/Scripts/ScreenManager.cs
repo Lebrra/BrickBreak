@@ -16,6 +16,11 @@ public class ScreenManager : MonoBehaviour
     [SerializeField]
     Animator pauseScreenAnim;
 
+    [Space, SerializeField]
+    StatsLoader winLoader;
+    [SerializeField]
+    StatsLoader loseLoader;
+
     string activeScreen = "";
     bool paused = false;
 
@@ -28,8 +33,8 @@ public class ScreenManager : MonoBehaviour
         pauseScreenAnim.gameObject.SetActive(true);
 
         SetScreen += SetScreenState;
-        GameManager.OnGameOver += () => SetScreenState("lose", true);
-        GameManager.OnGameWin += () => SetScreenState("win", true);
+        GameManager.OnGameOver += SetLose;
+        GameManager.OnGameWin += SetWin;
         mainScreenAnim.SetTrigger("forceOn");
     }
 
@@ -47,6 +52,18 @@ public class ScreenManager : MonoBehaviour
         GameManager.AllowInput = !paused;
         Time.timeScale = paused ? 0F : 1F;
         pauseScreenAnim.SetTrigger(paused ? "on" : "off");
+    }
+
+    void SetWin()
+    {
+        BeauRoutine.Routine.Start(WaitToSetStats(true));
+        SetScreenState("win", true);
+    }
+
+    void SetLose()
+    {
+        BeauRoutine.Routine.Start(WaitToSetStats(false));
+        SetScreenState("lose", true);
     }
 
     void SetScreenState(string key, bool enabled)
@@ -100,8 +117,12 @@ public class ScreenManager : MonoBehaviour
         }
     }
 
-    void SetScreenStats()
+    IEnumerator WaitToSetStats(bool win)
     {
-        // todo
+        yield return null;
+
+        var stats = StatsManager.GetStats.Invoke();
+        if (win) winLoader.LoadText(stats);
+        else loseLoader.LoadText(stats);
     }
 }

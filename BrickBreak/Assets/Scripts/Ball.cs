@@ -90,6 +90,8 @@ public class Ball : MonoBehaviour
             }
             else AudioManager.PlayClip?.Invoke("backBonk");
         }
+
+        StatsManager.AddBounce?.Invoke();
     }
 
     // normalized!!

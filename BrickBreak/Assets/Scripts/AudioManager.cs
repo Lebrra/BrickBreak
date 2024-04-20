@@ -11,9 +11,9 @@ public class AudioManager : MonoBehaviour
     AudioSource audioSource;
 
     [SerializeField]
-    List<AudioPair> audioPairs;
+    List<AudioProperty> audioPairs;
 
-    Dictionary<string, AudioClip> audioDict;
+    Dictionary<string, AudioProperty> audioDict;
     bool loaded = false;
     List<AudioSource> activeSources = new List<AudioSource>();
 
@@ -23,14 +23,14 @@ public class AudioManager : MonoBehaviour
         activeSources.Add(Instantiate(audioSource, transform));
         activeSources[0].gameObject.SetActive(true);
 
-        audioDict = new Dictionary<string, AudioClip>();
+        audioDict = new Dictionary<string, AudioProperty>();
         foreach (var pair in audioPairs)
         {
             if (audioDict.ContainsKey(pair.name))
             {
                 Debug.LogError("Found duplicate audio key! Only first instance will be used: " + pair.name);
             }
-            else audioDict.Add(pair.name, pair.clip);
+            else audioDict.Add(pair.name, pair);
         }
 
         Debug.Log($"Successfully loaded {audioDict.Count} entries into the audio manager.");
@@ -41,9 +41,10 @@ public class AudioManager : MonoBehaviour
     {
         if (loaded)
         {
-            var clip = audioDict.ContainsKey(key) ? audioDict[key] : null;
-            if (clip)
+            if (audioDict.ContainsKey(key))
             {
+                var property = audioDict[key];
+
                 // find an available source, if none then make one
                 int source = 0;
                 while (source < activeSources.Count && activeSources[source].isPlaying)
@@ -57,16 +58,26 @@ public class AudioManager : MonoBehaviour
                 }
 
                 // load and play
-                activeSources[source].clip = clip;
+                activeSources[source].clip = property.clip;
+                activeSources[source].volume = property.volume;
                 activeSources[source].Play();
             }
         }
     }
 
+    public void EnableSound(bool enable)
+    {
+        foreach (var source in activeSources)
+        {
+            source.mute = !enable;
+        }
+    }
+
     [Serializable]
-    struct AudioPair
+    struct AudioProperty
     {
         public string name;
         public AudioClip clip;
+        public float volume;
     }
 }

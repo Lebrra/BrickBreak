@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -20,5 +21,19 @@ public static class Utility
     public static Vector3 GetWorldRotation(float angle)
     {
         return Vector3.forward * Mathf.Rad2Deg * (angle - Mathf.PI / 2F);
+    }
+
+    public static string SecondsToTime(double inSeconds)
+    {
+        var hours = TimeSpan.FromSeconds(inSeconds).Hours;
+        var minutes = TimeSpan.FromSeconds(inSeconds).Minutes + (hours * 60);
+        var seconds = TimeSpan.FromSeconds(inSeconds).Seconds;
+        var minuteChange = Mathf.RoundToInt(((float)seconds / 60F) * 100F);
+
+        if (minutes > 0)
+            // written in minutes - 5.25 minutes
+            return $"{minutes}.{minuteChange} minutes";
+        else 
+            return $"{seconds} seconds";
     }
 }
