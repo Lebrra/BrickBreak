@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class ScreenManager : MonoBehaviour
 {
@@ -114,6 +115,12 @@ public class ScreenManager : MonoBehaviour
             default:
                 Debug.LogError("Invalid screen name! " + key);
                 break;
+        }
+
+        // deselect if panel has been closed
+        if (!enabled)
+        {
+            EventSystem.current.SetSelectedGameObject(null);
         }
     }
 
